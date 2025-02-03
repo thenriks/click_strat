@@ -1,11 +1,12 @@
-require 'app/game.rb'
-require 'app/ui/progress_bar.rb'
+require 'app/game'
+require 'app/ui/progress_bar'
+require 'app/ui/tab'
+require 'app/ui/button'
 
 class GameMain
   attr_gtk
 
   def initialize
-    # $g = Game.new
     @new_game = true
   end
 
@@ -23,6 +24,9 @@ class GameMain
         slot.progress.value = sys.sprawl_pts
       end
     end
+
+    res_info = @tab_overview.get_widget(:res_info)
+    res_info.text = "research: #{$g.players[0].r_level}(#{$g.players[0].research})"
   end
 
   def click_system(id)
@@ -32,19 +36,31 @@ class GameMain
     end
   end
 
+  def toggle_autoplay
+    state.autoplay = !state.autoplay
+    state.autoplay_counter = 30
+  end
+
   def handle_input
     if inputs.keyboard.key_down.space
-      state.autoplay = !state.autoplay
-      state.autoplay_counter = 30
+      toggle_autoplay
     end
 
     if inputs.mouse.click
       @ui_el.each do |uitem|
         if inputs.mouse.inside_rect? uitem.r
-          # puts "click #{uitem.id}"
+          puts "click #{uitem.id}"
           case uitem.id
+          when :btn_auto
+            toggle_autoplay
           when :btn_turn
             handle_turn
+          when :btn_overview
+            @ui_tab = 1
+          when :btn_systems
+            @ui_tab = 2
+          when :btn_events
+            @ui_tab = 3
           end
         end
       end
@@ -94,6 +110,19 @@ class GameMain
       puts sys.sid
       state.slots << new_sys
     end
+
+    @ui_tab = 1
+    @tab_overview = Tab.new
+    r = layout.rect(row: 2, col: 12, w: 6, h: 1)
+    @tab_overview.add_label(:res_info, r.x, r.y, "research: #{$g.players[0].r_level}(#{$g.players[0].research})")
+    r = layout.rect(row: 3, col: 12, w: 6, h: 1)
+    @tab_overview.add_button(:testib, "Testi", r)
+    @tab_systems = Tab.new
+    r = layout.rect(row: 2, col: 12, w: 6, h: 1)
+    @tab_systems.add_label(:testi, r.x, r.y, "systems")
+    @tab_events = Tab.new
+    r = layout.rect(row: 2, col: 12, w: 6, h: 1)
+    @tab_events.add_label(:testi, r.x, r.y, "events")
   end
 
   def tick
@@ -103,13 +132,17 @@ class GameMain
 
     state.autoplay ||= false
     state.autoplay_counter ||= 0
-    @ui_el ||= [{ id: :btn_turn, r: layout.rect(row: 0, col: 12, w: 4, h: 1) },
-             { id: :btn_auto, r: layout.rect(row: 0, col: 16, w: 1, h: 1) },]
+    @ui_el ||= [{ id: :btn_turn, r: layout.rect(row: 0, col: 12, w: 5, h: 1) },
+                { id: :btn_auto, r: layout.rect(row: 0, col: 17, w: 1, h: 1) },
+                { id: :btn_overview, r: layout.rect(row: 1, col: 12, w: 2, h: 1) },
+                { id: :btn_systems, r: layout.rect(row: 1, col: 14, w: 2, h: 1) },
+                { id: :btn_events, r: layout.rect(row: 1, col: 16, w: 2, h: 1) }]
+    
     state.stats_r ||= layout.rect(row: 0, col: 0, w: 4, h: 2)
 
     outputs[:scene].transient!
     outputs[:scene].background_color = [0,0,0]
-    # outputs[:scene].sprites << { x: state.r.x, y: state.r.y, w: state.r.w, h: state.r.h }
+
     @ui_el.each do |uitem|
       outputs[:scene].sprites << { x: uitem.r.x, y: uitem.r.y, w: uitem.r.w, h: uitem.r.h }
     end
@@ -120,7 +153,7 @@ class GameMain
       if sys.owner == 0
         outputs[:scene].sprites << 
           { x: slot.r.x, y: slot.r.y, w: slot.r.w, h: slot.r.h, r: 100, g: 100, b: 100, path: :pixel }
-        outputs[:scene].sprites << slot.progress
+        outputs[:scene].sprites << slot.progress if sys.focus != 2
       end
       outputs[:scene].sprites << 
         { x: slot.r.x, y: slot.r.y, w: slot.r.w, h: slot.r.h, path: 'sprites/misc/star.png' }
@@ -147,21 +180,15 @@ class GameMain
                                   text: "#{sys.power.round}/#{sys.sprawl.round}" }
     end
 
-    outputs[:scene].labels << { x: state.stats_r.x,
-                                y: state.stats_r.y,
-                                vertical_alignment_enum: 0,
-                                alignment_enum: 0,
-                                size_px: 40,
-                                g: 200,
-                                text: "research: #{$g.players[0].r_level}(#{$g.players[0].research})" }
-
-    outputs[:scene].labels << { x: 100,
-                                y: 100,
-                                vertical_alignment_enum: 2,
-                                alignment_enum: 0,
-                                size_px: 32,
-                                g: 200,
-                                text: state.autoplay }
+    case @ui_tab
+    when 1
+      outputs[:scene].primitives << @tab_overview.primitives
+    when 2
+      outputs[:scene].primitives << @tab_systems.primitives
+    when 3
+      outputs[:scene].primitives << @tab_events.primitives
+    end
+    
 
     if state.autoplay
       state.autoplay_counter -= 1
