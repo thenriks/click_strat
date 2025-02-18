@@ -1,6 +1,8 @@
 require 'app/game'
 require 'app/ui/progress_bar'
 require 'app/ui/tab'
+require 'app/ui/tab_overview'
+require 'app/ui/tab_systems'
 require 'app/ui/button'
 
 class GameMain
@@ -24,12 +26,10 @@ class GameMain
         slot.progress.value = sys.sprawl_pts
       end
     end
-
-    res_info = @tab_overview.get_widget(:res_info)
-    res_info.text = "research: #{$g.players[0].r_level}(#{$g.players[0].research})"
   end
 
   def click_system(id)
+    @tab_systems.active_system = id
     if $g.get_system(id).owner == 0
       $g.get_system(id).focus += 1
       $g.get_system(id).focus = 0 if $g.get_system(id).focus > 2
@@ -112,12 +112,12 @@ class GameMain
     end
 
     @ui_tab = 1
-    @tab_overview = Tab.new
+    @tab_overview = TabOverview.new
     r = layout.rect(row: 2, col: 12, w: 6, h: 1)
     @tab_overview.add_label(:res_info, r.x, r.y, "research: #{$g.players[0].r_level}(#{$g.players[0].research})")
     r = layout.rect(row: 3, col: 12, w: 6, h: 1)
     @tab_overview.add_button(:testib, "Testi", r)
-    @tab_systems = Tab.new
+    @tab_systems = TabSystems.new
     r = layout.rect(row: 2, col: 12, w: 6, h: 1)
     @tab_systems.add_label(:testi, r.x, r.y, "systems")
     @tab_events = Tab.new
@@ -182,8 +182,10 @@ class GameMain
 
     case @ui_tab
     when 1
+      @tab_overview.tick($g)
       outputs[:scene].primitives << @tab_overview.primitives
     when 2
+      @tab_systems.tick($g)
       outputs[:scene].primitives << @tab_systems.primitives
     when 3
       outputs[:scene].primitives << @tab_events.primitives

@@ -6,6 +6,10 @@ class Tab
     @widgets = []
   end
 
+  def tick(game)
+    
+  end
+
   def get_widget(tag)
     @widgets.each do |w|
       return w if w.tag == tag

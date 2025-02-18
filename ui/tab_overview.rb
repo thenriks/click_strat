@@ -1,35 +1,9 @@
-require 'app/ui/label.rb'
+require 'app/ui/tab'
+require 'app/ui/label'
 
-def update_overview
-  # Tähän overview tabin päivitysmetodi
+class TabOverview < Tab
+  def tick(game)
+    res_info = get_widget(:res_info)
+    res_info.text = "research: #{game.players[0].r_level}(#{game.players[0].research})"
+  end
 end
-
-# class TabOverview
-#   def initialize
-#     @widgets = []
-#   end
-
-#   def add_label(tag, x, y, text)
-#     @widgets << Label.new(tag, x, y, text)
-#   end
-
-#   def primitives
-#     ret = []
-    
-#     @widgets.each do |w|
-#       ret << w.primitives
-#     end
-
-#     ret
-#   end
-# end
-
-# def tab_overview
-#   [
-#     { 
-#       id: :lbl_res, 
-#       text: "research: #{$g.players[0].r_level}(#{$g.players[0].research})", 
-#       r: layout.rect(row: 2, col: 12, w: 6, h: 1) 
-#     }
-#   ]
-# end

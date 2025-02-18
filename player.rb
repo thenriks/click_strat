@@ -1,9 +1,10 @@
 class Player
-  attr_reader :name, :id, :research, :r_level, :r_goal
+  attr_reader :name, :id, :ai, :research, :r_level, :r_goal
 
-  def initialize(name, id)
+  def initialize(name, id, ai)
     @name = name
     @id = id
+    @ai = ai
 
     @research = 0
     @r_level = 0

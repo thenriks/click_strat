@@ -7,7 +7,7 @@ class Game
   def initialize
     # @players = [{ name: 'tuomas', id: 0, research: 0 , r_level: 0, r_goal: 1 },
     #            { name: 'AI', id: 1, research: 0 , r_level: 0, r_goal: 1 }]
-    @players = [Player.new('tuomas', 0), Player.new('AI', 1)]
+    @players = [Player.new('tuomas', 0, false), Player.new('AI1', 1, true)]
     # @systems = [StarSystem.new('Prime', 0), StarSystem.new('Beta', 1), StarSystem.new('Xyz', 2, 2, 2, 1)]
     @systems = []
 
