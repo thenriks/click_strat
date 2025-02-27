@@ -4,15 +4,17 @@ require 'app/ui/tab'
 require 'app/ui/tab_overview'
 require 'app/ui/tab_systems'
 require 'app/ui/button'
+require 'app/util/color'
 
 class GameMain
   attr_gtk
 
   def initialize
-    @new_game = true
+    $new_game = true
   end
 
   def handle_turn
+    $g.move_fleets
     $g.handle_turn
 
     state.slots.each do |slot|
@@ -28,17 +30,37 @@ class GameMain
     end
   end
 
+  def switch_tab(tab)
+    case tab
+    when 1
+      @tab_el = @tab_overview.widgets
+    when 2
+      @tab_systems.update
+      @tab_el = @tab_systems.widgets
+    when 3
+      @tab_el = @tab_events.widgets
+    end
+
+    @ui_tab = tab
+  end
+
   def click_system(id)
-    @tab_systems.active_system = id
-    if $g.get_system(id).owner == 0
+    if id == @tab_systems.active_system && $g.get_system(id).owner == 0
       $g.get_system(id).focus += 1
       $g.get_system(id).focus = 0 if $g.get_system(id).focus > 2
     end
+    
+    @tab_systems.active_system = id
+    switch_tab(2)
   end
 
   def toggle_autoplay
     state.autoplay = !state.autoplay
     state.autoplay_counter = 30
+
+    # Set :btn_turn inactive when autoplay is on
+    btn_turn = @ui_el.find { |uiel| uiel.id == :btn_turn }
+    btn_turn.active = !state.autoplay
   end
 
   def handle_input
@@ -48,19 +70,29 @@ class GameMain
 
     if inputs.mouse.click
       @ui_el.each do |uitem|
-        if inputs.mouse.inside_rect? uitem.r
+        if inputs.mouse.inside_rect? uitem.rect
           puts "click #{uitem.id}"
+          uitem.click
           case uitem.id
           when :btn_auto
             toggle_autoplay
           when :btn_turn
-            handle_turn
+            handle_turn if uitem.active
           when :btn_overview
-            @ui_tab = 1
+            switch_tab(1)
           when :btn_systems
-            @ui_tab = 2
+            switch_tab(2)
           when :btn_events
-            @ui_tab = 3
+            switch_tab(3)
+          end
+        end
+      end
+
+      @tab_el.each do |uitem|
+        if uitem.clickable
+          if inputs.mouse.inside_rect? uitem.rect
+            puts "click #{uitem.id}"
+            uitem.click
           end
         end
       end
@@ -100,7 +132,7 @@ class GameMain
     $g.add_system('Xyz', 1)
     $g.add_system('Beta', 0)
 
-    @new_game = false
+    $new_game = false
     state.slots = []
 
     $g.systems.each do |sys|
@@ -111,42 +143,36 @@ class GameMain
       state.slots << new_sys
     end
 
+    $g.add_fleet(1, 3)
+
     @ui_tab = 1
     @tab_overview = TabOverview.new
-    r = layout.rect(row: 2, col: 12, w: 6, h: 1)
-    @tab_overview.add_label(:res_info, r.x, r.y, "research: #{$g.players[0].r_level}(#{$g.players[0].research})")
-    r = layout.rect(row: 3, col: 12, w: 6, h: 1)
-    @tab_overview.add_button(:testib, "Testi", r)
     @tab_systems = TabSystems.new
-    r = layout.rect(row: 2, col: 12, w: 6, h: 1)
-    @tab_systems.add_label(:testi, r.x, r.y, "systems")
     @tab_events = Tab.new
     r = layout.rect(row: 2, col: 12, w: 6, h: 1)
     @tab_events.add_label(:testi, r.x, r.y, "events")
+    @tab_el = @tab_overview.widgets    
   end
 
   def tick
-    if @new_game
+    if $new_game
       set_defaults
     end
 
     state.autoplay ||= false
     state.autoplay_counter ||= 0
-    @ui_el ||= [{ id: :btn_turn, r: layout.rect(row: 0, col: 12, w: 5, h: 1) },
-                { id: :btn_auto, r: layout.rect(row: 0, col: 17, w: 1, h: 1) },
-                { id: :btn_overview, r: layout.rect(row: 1, col: 12, w: 2, h: 1) },
-                { id: :btn_systems, r: layout.rect(row: 1, col: 14, w: 2, h: 1) },
-                { id: :btn_events, r: layout.rect(row: 1, col: 16, w: 2, h: 1) }]
-    
+
+    @ui_el ||= [Button.new(:btn_turn, 'Turn', layout.rect(row: 0, col: 12, w: 5, h: 1)),
+                Button.new(:btn_auto, '>', layout.rect(row: 0, col: 17, w: 1, h: 1)),
+                Button.new(:btn_overview, 'ovr', layout.rect(row: 1, col: 12, w: 2, h: 1)),
+                Button.new(:btn_systems, 'sys', layout.rect(row: 1, col: 14, w: 2, h: 1)),
+                Button.new(:btn_events, 'eve', layout.rect(row: 1, col: 16, w: 2, h: 1))]
     state.stats_r ||= layout.rect(row: 0, col: 0, w: 4, h: 2)
 
     outputs[:scene].transient!
     outputs[:scene].background_color = [0,0,0]
 
-    @ui_el.each do |uitem|
-      outputs[:scene].sprites << { x: uitem.r.x, y: uitem.r.y, w: uitem.r.w, h: uitem.r.h }
-    end
-
+    # Gameboard
     state.slots.each do |slot|
       sys = $g.get_system(slot.id)
 
@@ -162,7 +188,7 @@ class GameMain
                                   vertical_alignment_enum: 2,
                                   alignment_enum: 0,
                                   size_px: 32,
-                                  g: 200,
+                                  **Color.green_text,
                                   text: sys.name }
 
       outputs[:scene].labels << { x: slot.r.x + slot.r.w, y: slot.r.y + slot.r.h,
@@ -178,6 +204,17 @@ class GameMain
                                   size_px: 40,
                                   g: 200,
                                   text: "#{sys.power.round}/#{sys.sprawl.round}" }
+    end
+    
+    $g.fleets.each do |fleet|
+      fr = layout.rect(row: fleet.y * 2, col: fleet.x * 2, w: 1, h: 1)
+      outputs[:scene].sprites << { x: fr.x, y: fr.y, w: fr.w, h: fr.h, path: 'sprites/ship.png' }
+    end
+
+    # UI
+    @ui_el.each do |uitem|
+      uitem.tick
+      outputs[:scene].primitives << uitem.primitives
     end
 
     case @ui_tab
@@ -203,6 +240,11 @@ class GameMain
 
     handle_input
   end
+end
+
+def reset args
+  $new_game = true
+  $game = nil
 end
 
 # $gtk.reset

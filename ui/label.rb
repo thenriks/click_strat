@@ -1,4 +1,6 @@
-class Label
+require 'app/ui/widget'
+
+class Label < Widget
   attr_reader :tag
 
   def initialize(tag, x, y, text)
@@ -6,6 +8,11 @@ class Label
     @x = x
     @y = y
     @text = text
+    @a = 255
+  end
+
+  def tick
+    
   end
 
   def text=(val)
@@ -14,13 +21,14 @@ class Label
 
   def primitives
     { 
-      x: @x, 
-      y: @y, 
-      g: 200, 
+      x: @x,
+      y: @y,
+      g: 200,
+      a: @a,
       vertical_alignment_enum: 0,
       alignment_enum: 0,
-      size_px: 32, 
-      text: @text 
+      size_px: 32,
+      text: @text
     }
   end
 end

@@ -2,11 +2,17 @@ require 'app/ui/label'
 require 'app/ui/button'
 
 class Tab
+  attr_reader :widgets
+
   def initialize
     @widgets = []
   end
 
   def tick(game)
+  end
+
+  # Update is used when tab composition is changed
+  def update
     
   end
 

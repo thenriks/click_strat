@@ -1,15 +1,15 @@
-require 'app/star_system.rb'
-require 'app/player.rb'
+require 'app/star_system'
+require 'app/player'
+require 'app/fleet'
 
 class Game
   attr_accessor :players, :systems
+  attr_reader :fleets
 
   def initialize
-    # @players = [{ name: 'tuomas', id: 0, research: 0 , r_level: 0, r_goal: 1 },
-    #            { name: 'AI', id: 1, research: 0 , r_level: 0, r_goal: 1 }]
     @players = [Player.new('tuomas', 0, false), Player.new('AI1', 1, true)]
-    # @systems = [StarSystem.new('Prime', 0), StarSystem.new('Beta', 1), StarSystem.new('Xyz', 2, 2, 2, 1)]
     @systems = []
+    @fleets = []
 
     @tiles = []
     
@@ -20,6 +20,34 @@ class Game
     end
 
     @tiles = @tiles.shuffle
+  end
+
+  def add_fleet(home, dest)
+    new_fleet = Fleet.new(1, home, dest, true)
+    
+    fhome = get_system(home)
+    new_fleet.x = fhome.position.x
+    new_fleet.y = fhome.position.y
+
+    @fleets << new_fleet
+  end
+
+  def move_fleets
+    @fleets.each do |fleet|
+      d = get_system(fleet.destination).position
+      
+      if fleet.x < d.x
+        fleet.x += 1
+      elsif fleet.x > d.x
+        fleet.x -= 1
+      end
+
+      if fleet.y < d.y
+        fleet.y += 1
+      elsif fleet.y > d.y
+        fleet.y -= 1
+      end
+    end
   end
 
   def add_system(sname, owner)
@@ -65,13 +93,10 @@ class Game
 
       case ssystem.focus
       when 0
-        # ssystem.power += 1 + r_mod
         ssystem.add_power(1 + r_mod)
       when 1
-        # ssystem.sprawl += 1 + r_mod
         ssystem.add_sprawl(1 + r_mod)
       when 2
-        # owner.research += 1
         owner.add_research(1)
       end
 
