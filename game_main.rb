@@ -5,6 +5,8 @@ require 'app/ui/tab_overview'
 require 'app/ui/tab_systems'
 require 'app/ui/button'
 require 'app/util/color'
+require 'app/util/states'
+require 'app/fleet_sprite'
 
 class GameMain
   attr_gtk
@@ -13,8 +15,36 @@ class GameMain
     $new_game = true
   end
 
+  def update_fleets
+    $g.fleets.each do |fleet|
+      exists = false
+      @fleets.each do |spr|
+        if spr.id == fleet.id
+          # sprite already exists
+          dest = layout.rect(row: fleet.y * 2, col: fleet.x * 2, w: 1, h: 1)
+          spr.dx = (dest.x - spr.x) / 20
+          spr.dy = (dest.y - spr.y) / 20
+          exists = true
+        end
+      end
+
+      if !exists
+        r = layout.rect(row: fleet.y * 2, col: fleet.x * 2, w: 1, h: 1)
+        @fleets << FleetSprite.new(fleet.id, r.x, r.y)
+      end
+    end
+  end
+
   def handle_turn
-    $g.move_fleets
+    if @game_state == GameState::WAIT_INPUT
+      @game_state = GameState::PREPARE_TURN
+      @move_counter = 20
+      $g.move_fleets
+      update_fleets
+    end
+  end
+
+  def end_turn
     $g.handle_turn
 
     state.slots.each do |slot|
@@ -28,6 +58,8 @@ class GameMain
         slot.progress.value = sys.sprawl_pts
       end
     end
+
+    @game_state = GameState::WAIT_INPUT
   end
 
   def switch_tab(tab)
@@ -143,7 +175,11 @@ class GameMain
       state.slots << new_sys
     end
 
-    $g.add_fleet(1, 3)
+    $g.add_fleet(1, 2)
+    # fl = FleetSprite.new(123)
+    # fl.dx = 1
+    # fl.dy = 1
+    @fleets = []
 
     @ui_tab = 1
     @tab_overview = TabOverview.new
@@ -152,6 +188,11 @@ class GameMain
     r = layout.rect(row: 2, col: 12, w: 6, h: 1)
     @tab_events.add_label(:testi, r.x, r.y, "events")
     @tab_el = @tab_overview.widgets    
+
+    @game_state = GameState::WAIT_INPUT
+    @move_counter = 0
+
+    update_fleets
   end
 
   def tick
@@ -206,9 +247,12 @@ class GameMain
                                   text: "#{sys.power.round}/#{sys.sprawl.round}" }
     end
     
-    $g.fleets.each do |fleet|
-      fr = layout.rect(row: fleet.y * 2, col: fleet.x * 2, w: 1, h: 1)
-      outputs[:scene].sprites << { x: fr.x, y: fr.y, w: fr.w, h: fr.h, path: 'sprites/ship.png' }
+    # $g.fleets.each do |fleet|
+    #  fr = layout.rect(row: fleet.y * 2, col: fleet.x * 2, w: 1, h: 1)
+    #  outputs[:scene].sprites << { x: fr.x, y: fr.y, w: fr.w, h: fr.h, path: 'sprites/ship.png' }
+    # end
+    @fleets.each do |fleet|
+      outputs[:scene].sprites << fleet
     end
 
     # UI
@@ -227,15 +271,28 @@ class GameMain
     when 3
       outputs[:scene].primitives << @tab_events.primitives
     end
-    
 
-    if state.autoplay
-      state.autoplay_counter -= 1
+    $args.outputs.debug << "mcounter: #{@move_counter}"
 
-      if state.autoplay_counter < 1
-        state.autoplay_counter = 30
-        handle_turn
+    if @game_state == GameState::WAIT_INPUT
+      if state.autoplay
+        state.autoplay_counter -= 1
+
+        if state.autoplay_counter < 1
+          state.autoplay_counter = 30
+          handle_turn
+        end
       end
+    elsif @game_state == GameState::PREPARE_TURN
+      @move_counter -= 1
+
+      if @move_counter < 1
+        @game_state = GameState::END_TURN
+      end
+
+      @fleets.each(&:move)
+    elsif @game_state == GameState::END_TURN
+      end_turn
     end
 
     handle_input
