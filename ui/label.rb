@@ -1,10 +1,10 @@
 require 'app/ui/widget'
 
 class Label < Widget
-  attr_reader :tag
+  attr_reader :id
 
-  def initialize(tag, x, y, text)
-    @tag = tag
+  def initialize(id, x, y, text)
+    @id = id
     @x = x
     @y = y
     @text = text

@@ -29,6 +29,10 @@ class Button < Widget
     end
   end
 
+  def text=(val)
+    @text = val
+  end
+
   def active=(val)
     @active = val
 

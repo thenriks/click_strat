@@ -7,6 +7,7 @@ require 'app/ui/button'
 require 'app/util/color'
 require 'app/util/states'
 require 'app/fleet_sprite'
+require 'app/system_events'
 
 class GameMain
   attr_gtk
@@ -16,6 +17,10 @@ class GameMain
   end
 
   def update_fleets
+    @fleets = @fleets.reject do |fleet|
+      fleet.active = false
+    end
+
     $g.fleets.each do |fleet|
       exists = false
       @fleets.each do |spr|
@@ -125,6 +130,8 @@ class GameMain
           if inputs.mouse.inside_rect? uitem.rect
             puts "click #{uitem.id}"
             uitem.click
+
+            handle_system_events(uitem, @tab_systems)
           end
         end
       end
@@ -247,10 +254,7 @@ class GameMain
                                   text: "#{sys.power.round}/#{sys.sprawl.round}" }
     end
     
-    # $g.fleets.each do |fleet|
-    #  fr = layout.rect(row: fleet.y * 2, col: fleet.x * 2, w: 1, h: 1)
-    #  outputs[:scene].sprites << { x: fr.x, y: fr.y, w: fr.w, h: fr.h, path: 'sprites/ship.png' }
-    # end
+    @fleets.each(&:tick)
     @fleets.each do |fleet|
       outputs[:scene].sprites << fleet
     end
@@ -287,6 +291,7 @@ class GameMain
       @move_counter -= 1
 
       if @move_counter < 1
+        @fleets.each(&:stop)
         @game_state = GameState::END_TURN
       end
 

@@ -16,14 +16,14 @@ class Tab
     
   end
 
-  def get_widget(tag)
+  def get_widget(id)
     @widgets.each do |w|
-      return w if w.tag == tag
+      return w if w.id == id
     end    
   end
 
-  def add_label(tag, x, y, text)
-    @widgets << Label.new(tag, x, y, text)
+  def add_label(id, x, y, text)
+    @widgets << Label.new(id, x, y, text)
   end
 
   def add_button(id, text, rect)

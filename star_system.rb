@@ -1,6 +1,6 @@
 class StarSystem
   attr_accessor :name, :power, :sprawl, :owner, :focus
-  attr_reader :sid, :position, :power_pts, :sprawl_pts
+  attr_reader :sid, :position, :power_pts, :sprawl_pts, :claims
 
   def initialize(name, id, power = 1, sprawl = 1, owner = 0)
     @name = name
@@ -12,6 +12,7 @@ class StarSystem
     @owner = owner
     @focus = 0
     @position = { x: 0, y: 0 }
+    @claims = []
   end
 
   def end_turn
@@ -24,6 +25,20 @@ class StarSystem
       @power_pts -= @power * 10
       @power += 1
     end
+  end
+
+  def claim(p)
+    if @claims.none? { |e| e == p }
+      @claims << p
+    end
+
+    puts @claims
+  end
+
+  def cancel_claim(p)
+    @claims = @claims.reject { |c| c == p}
+
+    puts @claims
   end
 
   def add_power(val)
