@@ -4,6 +4,7 @@ require 'app/ui/tab'
 require 'app/ui/tab_overview'
 require 'app/ui/tab_systems'
 require 'app/ui/button'
+require 'app/ui/notification'
 require 'app/util/color'
 require 'app/util/states'
 require 'app/fleet_sprite'
@@ -17,23 +18,31 @@ class GameMain
   end
 
   def update_fleets
+    puts @fleets.size
+
     @fleets = @fleets.reject do |fleet|
-      fleet.active = false
+      fleet.active == false
+    end
+
+    @fleets.each do |spr|
+      spr.active = false
     end
 
     $g.fleets.each do |fleet|
       exists = false
+
       @fleets.each do |spr|
         if spr.id == fleet.id
           # sprite already exists
           dest = layout.rect(row: fleet.y * 2, col: fleet.x * 2, w: 1, h: 1)
           spr.dx = (dest.x - spr.x) / 20
           spr.dy = (dest.y - spr.y) / 20
+          spr.active = true
           exists = true
         end
       end
 
-      if !exists
+      if !exists && fleet.active
         r = layout.rect(row: fleet.y * 2, col: fleet.x * 2, w: 1, h: 1)
         @fleets << FleetSprite.new(fleet.id, r.x, r.y)
       end
@@ -49,8 +58,31 @@ class GameMain
     end
   end
 
+  def add_notes(notes)
+    notes.each do |note|
+      nr = layout.rect(row: note.y * 2, col: (note.x * 2), w: 1, h: 1)
+      nr.x += rand(50)
+      case note.type
+      when :damage
+        @notifications << Notification.new(nr, Color::RED, note.value) 
+      end
+    end
+  end
+
   def end_turn
-    $g.handle_turn
+    notes = $g.handle_turn
+
+    add_notes(notes)
+    
+    $g.fleets.each do |fleet|
+      @fleets.each do |spr|
+        if fleet.id == spr.id
+          if fleet.active == false
+            spr.fade_out = true
+          end
+        end
+      end
+    end
 
     state.slots.each do |slot|
       sys = $g.get_system(slot.id)
@@ -108,7 +140,7 @@ class GameMain
     if inputs.mouse.click
       @ui_el.each do |uitem|
         if inputs.mouse.inside_rect? uitem.rect
-          puts "click #{uitem.id}"
+          #puts "click #{uitem.id}"
           uitem.click
           case uitem.id
           when :btn_auto
@@ -183,11 +215,9 @@ class GameMain
     end
 
     $g.add_fleet(1, 2)
-    # fl = FleetSprite.new(123)
-    # fl.dx = 1
-    # fl.dy = 1
     @fleets = []
 
+    @notifications = []
     @ui_tab = 1
     @tab_overview = TabOverview.new
     @tab_systems = TabSystems.new
@@ -236,7 +266,7 @@ class GameMain
                                   vertical_alignment_enum: 2,
                                   alignment_enum: 0,
                                   size_px: 32,
-                                  **Color.green_text,
+                                  **Color::GREEN,
                                   text: sys.name }
 
       outputs[:scene].labels << { x: slot.r.x + slot.r.w, y: slot.r.y + slot.r.h,
@@ -260,6 +290,12 @@ class GameMain
     end
 
     # UI
+    @notifications = @notifications.reject { |note| note.active == false }
+    @notifications.each do |note|
+      note.tick
+      outputs[:scene].primitives << note.primitives
+    end
+
     @ui_el.each do |uitem|
       uitem.tick
       outputs[:scene].primitives << uitem.primitives

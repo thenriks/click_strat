@@ -1,6 +1,6 @@
 class Fleet
   attr_reader :id, :power, :home, :destination
-  attr_accessor :x, :y
+  attr_accessor :x, :y, :active
 
   def initialize(power, home, destination, attack)
     @id = $gtk.create_uuid
@@ -10,5 +10,6 @@ class Fleet
     @y = 1
     @destination = destination
     @attack = attack
+    @active = true
   end
 end

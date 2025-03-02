@@ -33,6 +33,10 @@ class Game
   end
 
   def move_fleets
+    @fleets = fleets.reject do |fleet|
+      fleet.active == false
+    end
+
     @fleets.each do |fleet|
       d = get_system(fleet.destination).position
       
@@ -86,6 +90,16 @@ class Game
   end
 
   def handle_turn
+    notes = []
+
+    @fleets.each do |fleet|
+      sys = get_system(fleet.destination)
+      if fleet.x == sys.position.x && fleet.y == sys.position.y
+        fleet.active = false
+        notes << { x: sys.position.x, y: sys.position.y, type: :damage, value: -1 }
+      end
+    end
+
     @systems.each do |ssystem|
       r_mod = 0
       owner = get_player(ssystem.owner)
@@ -106,5 +120,7 @@ class Game
     end
 
     end_turn
+
+    return notes
   end
 end

@@ -1,6 +1,6 @@
 class FleetSprite
   attr_reader :id
-  attr_accessor :dx, :dy, :active
+  attr_accessor :dx, :dy, :active, :fade_out
 
   attr_sprite
 
