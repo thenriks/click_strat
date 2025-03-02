@@ -7,7 +7,7 @@ class Game
   attr_reader :fleets
 
   def initialize
-    @players = [Player.new('tuomas', 0, false), Player.new('AI1', 1, true)]
+    @players = [Player.new('tuomas', 0, false), Player.new('AI1', 1, true), Player.new('AI2', 2, true)]
     @systems = []
     @fleets = []
 
@@ -22,9 +22,9 @@ class Game
     @tiles = @tiles.shuffle
   end
 
-  def add_fleet(home, dest)
-    new_fleet = Fleet.new(1, home, dest, true)
-    
+  def add_fleet(owner, home, dest)
+    new_fleet = Fleet.new(owner, 1, home, dest, true)
+
     fhome = get_system(home)
     new_fleet.x = fhome.position.x
     new_fleet.y = fhome.position.y
@@ -80,12 +80,51 @@ class Game
   end
 
   def end_turn
+    notes = []
+
     @systems.each do |sys|
-      sys.end_turn
+      note = sys.end_turn
+      if note.empty? == false
+        note.each do |n|
+          notes << n
+        end
+      end
     end
 
     @players.each do |plr|
       plr.end_turn
+    end
+
+    notes
+  end
+
+  # Get list of systems where player with id has claims
+  def find_claims(pid)
+    claims = []
+
+    @systems.each do |sys|
+      if sys.claims.any? { |c| c == pid }
+        claims << sys.sid
+      end
+    end
+
+    claims
+  end
+
+  def deploy_fleets
+    @players.each do |player|
+      claims = find_claims(player.id).shuffle
+
+      if claims.empty? == false
+        @systems.each do |sys|
+          if sys.owner == player.id
+            claims = claims.shuffle
+            puts claims
+            add_fleet(player.id, sys.sid, claims[0])
+          end
+          # add_fleet(1, 1, 3)
+        end
+      end
     end
   end
 
@@ -119,7 +158,12 @@ class Game
       end
     end
 
-    end_turn
+    end_result = end_turn
+    end_result.each do |result|
+      notes << result
+    end
+
+    deploy_fleets
 
     return notes
   end

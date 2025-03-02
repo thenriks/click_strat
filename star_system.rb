@@ -16,15 +16,27 @@ class StarSystem
   end
 
   def end_turn
-    check_power
-    check_sprawl
+    notes = []
+
+    if check_power == 1
+      notes << { x: @position.x, y: @position.y, type: :power, value: 1 }
+    end
+
+    if check_sprawl == 1
+      notes << { x: @position.x, y: @position.y, type: :sprawl, value: 1 }
+    end
+
+    notes
   end
 
   def check_power
     if @power_pts >= @power * 10
       @power_pts -= @power * 10
       @power += 1
+      return 1
     end
+
+    nil
   end
 
   def claim(p)
@@ -49,7 +61,10 @@ class StarSystem
     if sprawl_pts >= @sprawl * 10
       @sprawl_pts -= @sprawl * 10
       @sprawl += 1
+      return 1
     end
+
+    nil
   end
 
   def add_sprawl(val)

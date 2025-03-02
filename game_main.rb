@@ -13,6 +13,9 @@ require 'app/system_events'
 class GameMain
   attr_gtk
 
+  MOVE_SPEED = 15
+  AUTOPLAY_SPEED = 15
+
   def initialize
     $new_game = true
   end
@@ -35,8 +38,8 @@ class GameMain
         if spr.id == fleet.id
           # sprite already exists
           dest = layout.rect(row: fleet.y * 2, col: fleet.x * 2, w: 1, h: 1)
-          spr.dx = (dest.x - spr.x) / 20
-          spr.dy = (dest.y - spr.y) / 20
+          spr.dx = (dest.x - spr.x) / MOVE_SPEED
+          spr.dy = (dest.y - spr.y) / MOVE_SPEED
           spr.active = true
           exists = true
         end
@@ -52,7 +55,7 @@ class GameMain
   def handle_turn
     if @game_state == GameState::WAIT_INPUT
       @game_state = GameState::PREPARE_TURN
-      @move_counter = 20
+      @move_counter = MOVE_SPEED
       $g.move_fleets
       update_fleets
     end
@@ -64,7 +67,11 @@ class GameMain
       nr.x += rand(50)
       case note.type
       when :damage
-        @notifications << Notification.new(nr, Color::RED, note.value) 
+        @notifications << Notification.new(nr, Color::RED, note.value)
+      when :power
+        @notifications << Notification.new(nr, Color::BLUE, note.value)
+      when :sprawl
+        @notifications << Notification.new(nr, Color::YELLOW, note.value)
       end
     end
   end
@@ -125,7 +132,7 @@ class GameMain
 
   def toggle_autoplay
     state.autoplay = !state.autoplay
-    state.autoplay_counter = 30
+    state.autoplay_counter = AUTOPLAY_SPEED
 
     # Set :btn_turn inactive when autoplay is on
     btn_turn = @ui_el.find { |uiel| uiel.id == :btn_turn }
@@ -202,6 +209,7 @@ class GameMain
     $g.add_system('Prime', 0)
     $g.add_system('Xyz', 1)
     $g.add_system('Beta', 0)
+    $g.add_system('Asdf', 2)
 
     $new_game = false
     state.slots = []
@@ -214,7 +222,7 @@ class GameMain
       state.slots << new_sys
     end
 
-    $g.add_fleet(1, 2)
+    # $g.add_fleet(1, 2)
     @fleets = []
 
     @notifications = []
@@ -312,14 +320,14 @@ class GameMain
       outputs[:scene].primitives << @tab_events.primitives
     end
 
-    $args.outputs.debug << "mcounter: #{@move_counter}"
+    # $args.outputs.debug << "mcounter: #{@move_counter}"
 
     if @game_state == GameState::WAIT_INPUT
       if state.autoplay
         state.autoplay_counter -= 1
 
         if state.autoplay_counter < 1
-          state.autoplay_counter = 30
+          state.autoplay_counter = AUTOPLAY_SPEED
           handle_turn
         end
       end
@@ -334,6 +342,7 @@ class GameMain
       @fleets.each(&:move)
     elsif @game_state == GameState::END_TURN
       end_turn
+      update_fleets
     end
 
     handle_input
