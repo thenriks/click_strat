@@ -1,10 +1,11 @@
 class StarSystem
   attr_accessor :name, :power, :sprawl, :owner, :focus
-  attr_reader :sid, :position, :power_pts, :sprawl_pts, :claims
+  attr_reader :sid, :id, :position, :power_pts, :sprawl_pts, :claims
 
   def initialize(name, id, power = 1, sprawl = 1, owner = 0)
     @name = name
-    @sid = id
+    @sid = id   #TODO: replace sid with id
+    @id = id
     @power = power
     @power_pts = 0.0
     @sprawl = sprawl
@@ -30,8 +31,8 @@ class StarSystem
   end
 
   def check_power
-    if @power_pts >= @power * 10
-      @power_pts -= @power * 10
+    if @power_pts >= (@power + 1) * 10
+      @power_pts -= (@power + 1) * 10
       @power += 1
       return 1
     end
@@ -58,8 +59,8 @@ class StarSystem
   end
 
   def check_sprawl
-    if sprawl_pts >= @sprawl * 10
-      @sprawl_pts -= @sprawl * 10
+    if sprawl_pts >= (@sprawl + 1) * 10
+      @sprawl_pts -= (@sprawl + 1) * 10
       @sprawl += 1
       return 1
     end

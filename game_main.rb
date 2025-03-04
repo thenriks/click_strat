@@ -21,7 +21,7 @@ class GameMain
   end
 
   def update_fleets
-    puts @fleets.size
+    # puts @fleets.size
 
     @fleets = @fleets.reject do |fleet|
       fleet.active == false
@@ -95,10 +95,10 @@ class GameMain
       sys = $g.get_system(slot.id)
 
       if sys.focus == 0
-        slot.progress.max = sys.power * 10
+        slot.progress.max = (sys.power + 1) * 10
         slot.progress.value = sys.power_pts
       elsif sys.focus == 1
-        slot.progress.max = sys.sprawl * 10
+        slot.progress.max = (sys.sprawl + 1) * 10
         slot.progress.value = sys.sprawl_pts
       end
     end

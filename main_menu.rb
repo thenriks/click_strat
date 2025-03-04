@@ -6,7 +6,7 @@ class MainMenu
     outputs[:scene].labels << { x: 30,
                                 y: 300,
                                 size_px: 40,
-                                text: "Press enter to start"
+                                text: "Click to start"
                               }
 
     state.next_scene = :game_main if inputs.keyboard.key_down.enter

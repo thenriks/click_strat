@@ -7,7 +7,7 @@ class Game
   attr_reader :fleets
 
   def initialize
-    @players = [Player.new('tuomas', 0, false), Player.new('AI1', 1, true), Player.new('AI2', 2, true)]
+    @players = [Player.new('Player', 0, false), Player.new('AI1', 1, true), Player.new('AI2', 2, true)]
     @systems = []
     @fleets = []
 
@@ -117,12 +117,11 @@ class Game
 
       if claims.empty? == false
         @systems.each do |sys|
-          if sys.owner == player.id
+          if sys.owner == player.id && sys.power > 1
+            sys.power -= 1
             claims = claims.shuffle
-            puts claims
             add_fleet(player.id, sys.sid, claims[0])
           end
-          # add_fleet(1, 1, 3)
         end
       end
     end
@@ -135,6 +134,13 @@ class Game
       sys = get_system(fleet.destination)
       if fleet.x == sys.position.x && fleet.y == sys.position.y
         fleet.active = false
+
+        if sys.power > 0
+          sys.power -= 1
+        elsif sys.sprawl > 0
+          sys.sprawl -= 1
+        end
+
         notes << { x: sys.position.x, y: sys.position.y, type: :damage, value: -1 }
       end
     end

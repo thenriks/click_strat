@@ -22,7 +22,5 @@ class TabOverview < Tab
 
     r = Layout.rect(row: 2, col: 12, w: 6, h: 1)
     add_label(:res_info, r.x, r.y, "research: #{$g.players[0].r_level}(#{$g.players[0].research})")
-    r = Layout.rect(row: 3, col: 12, w: 6, h: 1)
-    add_button(:testib, "Testi", r)
   end
 end
