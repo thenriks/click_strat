@@ -7,7 +7,8 @@ class Game
   attr_reader :fleets
 
   def initialize
-    @players = [Player.new('Player', 0, false), Player.new('AI1', 1, true), Player.new('AI2', 2, true)]
+    @players = []
+
     @systems = []
     @fleets = []
 
@@ -20,6 +21,17 @@ class Game
     end
 
     @tiles = @tiles.shuffle
+
+    new_game
+  end
+
+  def new_game
+    @players = [Player.new('Player', 0, false), Player.new('AI1', 1, true), Player.new('AI2', 2, true)]
+
+    add_system('Prime', 0)
+    add_system('Xyz', 1, true)
+    add_system('Beta', 0)
+    add_system('Asdf', 2, true)
   end
 
   def add_fleet(owner, home, dest)
@@ -54,8 +66,13 @@ class Game
     end
   end
 
-  def add_system(sname, owner)
-    sys = StarSystem.new(sname, @systems.size + 1, 1, 1, owner)
+  def add_system(sname, owner, rnd_stats = false)
+    if rnd_stats
+      sys = StarSystem.new(sname, @systems.size + 1, rand(6), rand(5) + 1, owner)
+    else
+      sys = StarSystem.new(sname, @systems.size + 1, 1, 1, owner)
+    end
+
     tile = @tiles.pop
 
     sys.set_position(tile.x, tile.y)
@@ -127,6 +144,23 @@ class Game
     end
   end
 
+  # AI players actions
+  def ai_actions
+    @players.each do |player|
+      if player.ai
+        @systems.each do |sys|
+          if sys.owner != player.id
+            if [true, false].sample
+              sys.claim(player.id)
+            else
+              sys.cancel_claim(player.id)
+            end            
+          end
+        end
+      end
+    end
+  end
+
   def handle_turn
     notes = []
 
@@ -150,6 +184,7 @@ class Game
       owner = get_player(ssystem.owner)
       r_mod += owner.r_level / 10 if owner.r_level > 0
 
+      # TODO if sprawl is zero, no other focus options should be possible
       case ssystem.focus
       when 0
         ssystem.add_power(1 + r_mod)
@@ -160,7 +195,7 @@ class Game
       end
 
       if ssystem.owner != 0
-        ssystem.focus = rand(3)
+        ssystem.focus = get_player(ssystem.owner).preferred_focus
       end
     end
 
@@ -168,6 +203,8 @@ class Game
     end_result.each do |result|
       notes << result
     end
+
+    ai_actions
 
     deploy_fleets
 

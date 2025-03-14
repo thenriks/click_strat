@@ -4,7 +4,7 @@ class StarSystem
 
   def initialize(name, id, power = 1, sprawl = 1, owner = 0)
     @name = name
-    @sid = id   #TODO: replace sid with id
+    @sid = id   # TODO: replace sid with id
     @id = id
     @power = power
     @power_pts = 0.0
@@ -14,6 +14,8 @@ class StarSystem
     @focus = 0
     @position = { x: 0, y: 0 }
     @claims = []
+    # System features give sys special bonuses etc.
+    @features = []
   end
 
   def end_turn
@@ -45,13 +47,13 @@ class StarSystem
       @claims << p
     end
 
-    puts @claims
+    # puts @claims
   end
 
   def cancel_claim(p)
     @claims = @claims.reject { |c| c == p}
 
-    puts @claims
+    # puts @claims
   end
 
   def add_power(val)

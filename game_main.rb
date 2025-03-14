@@ -8,7 +8,7 @@ require 'app/ui/notification'
 require 'app/util/color'
 require 'app/util/states'
 require 'app/fleet_sprite'
-require 'app/system_events'
+require 'app/system_tab_events'
 
 class GameMain
   attr_gtk
@@ -147,7 +147,7 @@ class GameMain
     if inputs.mouse.click
       @ui_el.each do |uitem|
         if inputs.mouse.inside_rect? uitem.rect
-          #puts "click #{uitem.id}"
+          # puts "click #{uitem.id}"
           uitem.click
           case uitem.id
           when :btn_auto
@@ -167,7 +167,7 @@ class GameMain
       @tab_el.each do |uitem|
         if uitem.clickable
           if inputs.mouse.inside_rect? uitem.rect
-            puts "click #{uitem.id}"
+            # puts "click #{uitem.id}"
             uitem.click
 
             handle_system_events(uitem, @tab_systems)
@@ -206,10 +206,10 @@ class GameMain
     puts 'new_game'
     $g = Game.new
 
-    $g.add_system('Prime', 0)
-    $g.add_system('Xyz', 1)
-    $g.add_system('Beta', 0)
-    $g.add_system('Asdf', 2)
+    # $g.add_system('Prime', 0)
+    # $g.add_system('Xyz', 1)
+    # $g.add_system('Beta', 0)
+    # $g.add_system('Asdf', 2)
 
     $new_game = false
     state.slots = []
@@ -256,7 +256,7 @@ class GameMain
     state.stats_r ||= layout.rect(row: 0, col: 0, w: 4, h: 2)
 
     outputs[:scene].transient!
-    outputs[:scene].background_color = [0,0,0]
+    outputs[:scene].background_color = [0, 0, 0]
 
     # Gameboard
     state.slots.each do |slot|

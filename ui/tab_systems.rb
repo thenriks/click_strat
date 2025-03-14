@@ -15,6 +15,7 @@ class TabSystems < Tab
 
   def update
     @widgets = []
+
     r = Layout.rect(row: 2, col: 12, w: 6, h: 1)
     add_label(:sys_caption, r.x, r.y, "systems") 
     r = Layout.rect(row: 3, col: 12, w: 6, h: 1)
@@ -48,6 +49,8 @@ class TabSystems < Tab
   end
 
   def tick(game)
+    super
+
     @widgets.each(&:tick)
     sys = game.get_system(@active_system)
     
