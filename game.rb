@@ -33,7 +33,7 @@ class Game
     add_system('Prime', 0)
     # prime = get_system(1)
     # f = SystemFeature.new
-    # f.add_component(ComponentType::POWER, 10)
+    # f.add_component(ComponentType::ATTACK, 50)
     # prime.add_feature(f)
     add_system('Xyz', 1, true)
     add_system('Beta', 0)
@@ -46,6 +46,7 @@ class Game
     fhome = get_system(home)
     new_fleet.x = fhome.position.x
     new_fleet.y = fhome.position.y
+    new_fleet.power += fhome.calculate_bonus(ComponentType::ATTACK)
 
     @fleets << new_fleet
   end
@@ -175,7 +176,7 @@ class Game
       if fleet.x == sys.position.x && fleet.y == sys.position.y
         roll = rand(100) + 1
 
-        if roll < fleet.power
+        if roll < (fleet.power - sys.calculate_bonus(ComponentType::DEFENCE)).clamp(10, 90)
           if sys.power > 0
             sys.power -= 1
           elsif sys.sprawl > 0

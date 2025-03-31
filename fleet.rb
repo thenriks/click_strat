@@ -1,6 +1,6 @@
 class Fleet
-  attr_reader :owner, :id, :power, :home, :destination
-  attr_accessor :x, :y, :active
+  attr_reader :owner, :id, :home, :destination
+  attr_accessor :x, :y, :active, :power
 
   def initialize(owner, power, home, destination, attack)
     @owner = owner
