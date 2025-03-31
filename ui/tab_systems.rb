@@ -54,6 +54,17 @@ class TabSystems < Tab
         add_button(:sys_strategy, 'A', r)
       end
     end
+
+    r = Layout.rect(row: 7, col: 16, w: 2, h: 1)
+    add_label(:pbonus, r.x, r.y, "P: #{$g.get_system(@active_system).calculate_bonus(0)}")
+    r = Layout.rect(row: 7, col: 18, w: 2, h: 1)
+    add_label(:pbonus, r.x, r.y, "I: #{$g.get_system(@active_system).calculate_bonus(1)}")
+    r = Layout.rect(row: 7, col: 20, w: 2, h: 1)
+    add_label(:pbonus, r.x, r.y, "R: #{$g.get_system(@active_system).calculate_bonus(2)}")
+    r = Layout.rect(row: 8, col: 16, w: 2, h: 1)
+    add_label(:pbonus, r.x, r.y, "A: #{$g.get_system(@active_system).calculate_bonus(3)}")
+    r = Layout.rect(row: 8, col: 20, w: 2, h: 1)
+    add_label(:pbonus, r.x, r.y, "D: #{$g.get_system(@active_system).calculate_bonus(4)}")
   end
 
   def tick(game)

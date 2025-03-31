@@ -1,7 +1,9 @@
-require 'app/star_system'
+require 'app/star_system/star_system'
+require 'app/star_system/system_feature'
 require 'app/player'
 require 'app/fleet'
 
+# Game class handles game logic so it is separated from user interface.
 class Game
   attr_accessor :players, :systems
   attr_reader :fleets
@@ -29,6 +31,10 @@ class Game
     @players = [Player.new('Player', 0, false), Player.new('AI1', 1, true), Player.new('AI2', 2, true)]
 
     add_system('Prime', 0)
+    # prime = get_system(1)
+    # f = SystemFeature.new
+    # f.add_component(ComponentType::POWER, 10)
+    # prime.add_feature(f)
     add_system('Xyz', 1, true)
     add_system('Beta', 0)
     add_system('Asdf', 2, true)
@@ -184,7 +190,7 @@ class Game
     end
 
     @systems.each do |ssystem|
-      r_mod = 0
+      r_mod = 0.0
       owner = get_player(ssystem.owner)
       r_mod += owner.r_level / 10 if owner.r_level > 0
 
@@ -194,10 +200,13 @@ class Game
 
       case ssystem.focus
       when 0
-        ssystem.add_power(1 + r_mod)
+        sys_mod = ssystem.calculate_bonus(ComponentType::POWER)
+        ssystem.add_power(1.0 + r_mod + sys_mod)
       when 1
+        sys_mod = ssystem.calculate_bonus(ComponentType::SPRAWL)
         ssystem.add_sprawl(1 + r_mod)
       when 2
+        sys_mod = ssystem.calculate_bonus(ComponentType::RESEARCH)
         owner.add_research(1)
       end
 

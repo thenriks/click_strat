@@ -196,7 +196,7 @@ class GameMain
     if foc == 0
       'P'
     elsif foc == 1
-      'S'
+      'I'
     else
       'R'
     end
