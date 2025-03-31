@@ -230,8 +230,8 @@ class GameMain
     @tab_overview = TabOverview.new
     @tab_systems = TabSystems.new
     @tab_events = Tab.new
-    r = layout.rect(row: 2, col: 12, w: 6, h: 1)
-    @tab_events.add_label(:testi, r.x, r.y, "events")
+    # r = layout.rect(row: 2, col: 12, w: 6, h: 1)
+    # @tab_events.add_label(:testi, r.x, r.y, "events")
     @tab_el = @tab_overview.widgets    
 
     @game_state = GameState::WAIT_INPUT
@@ -248,11 +248,11 @@ class GameMain
     state.autoplay ||= false
     state.autoplay_counter ||= 0
 
-    @ui_el ||= [Button.new(:btn_turn, 'Turn', layout.rect(row: 0, col: 12, w: 5, h: 1)),
-                Button.new(:btn_auto, '>', layout.rect(row: 0, col: 17, w: 1, h: 1)),
-                Button.new(:btn_overview, 'ovr', layout.rect(row: 1, col: 12, w: 2, h: 1)),
-                Button.new(:btn_systems, 'sys', layout.rect(row: 1, col: 14, w: 2, h: 1)),
-                Button.new(:btn_events, 'eve', layout.rect(row: 1, col: 16, w: 2, h: 1))]
+    @ui_el ||= [Button.new(:btn_turn, 'Turn', layout.rect(row: 0, col: 16, w: 5, h: 1)),
+                Button.new(:btn_auto, '>', layout.rect(row: 0, col: 21, w: 1, h: 1)),
+                Button.new(:btn_overview, 'ovr', layout.rect(row: 1, col: 16, w: 2, h: 1)),
+                Button.new(:btn_systems, 'sys', layout.rect(row: 1, col: 18, w: 2, h: 1)),
+                Button.new(:btn_events, 'eve', layout.rect(row: 1, col: 20, w: 2, h: 1))]
     state.stats_r ||= layout.rect(row: 0, col: 0, w: 4, h: 2)
 
     outputs[:scene].transient!

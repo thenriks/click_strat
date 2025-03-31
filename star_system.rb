@@ -1,6 +1,6 @@
 class StarSystem
   attr_accessor :name, :power, :sprawl, :owner, :focus
-  attr_reader :sid, :id, :position, :power_pts, :sprawl_pts, :claims
+  attr_reader :sid, :id, :position, :power_pts, :sprawl_pts, :claims, :strategy
 
   def initialize(name, id, power = 1, sprawl = 1, owner = 0)
     @name = name
@@ -13,9 +13,28 @@ class StarSystem
     @owner = owner
     @focus = 0
     @position = { x: 0, y: 0 }
+    @strategy = 0
     @claims = []
     # System features give sys special bonuses etc.
     @features = []
+  end
+
+  def switch_strategy
+    if @strategy == 0
+      @strategy = 1
+    else
+      @strategy = 0
+    end
+  end
+
+  def strategy=(s)
+    if s > 1
+      s = 0
+    elsif s < 0
+      s = 0
+    end
+
+    @strategy = s
   end
 
   def end_turn

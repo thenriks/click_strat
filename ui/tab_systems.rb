@@ -16,11 +16,11 @@ class TabSystems < Tab
   def update
     @widgets = []
 
-    r = Layout.rect(row: 2, col: 12, w: 6, h: 1)
-    add_label(:sys_caption, r.x, r.y, "systems") 
-    r = Layout.rect(row: 3, col: 12, w: 6, h: 1)
-    add_label(:sys_owner, r.x, r.y, "Owner: ")
-    r = Layout.rect(row: 4, col: 12, w: 6, h: 1)
+    r = Layout.rect(row: 2, col: 16, w: 6, h: 1)
+    add_label(:sys_caption, r.x, r.y, 'systems') 
+    r = Layout.rect(row: 3, col: 16, w: 6, h: 1)
+    add_label(:sys_owner, r.x, r.y, 'Owner: ')
+    r = Layout.rect(row: 4, col: 16, w: 6, h: 1)
 
     focus = 'NIL'
     case $g.get_system(@active_system).focus  
@@ -34,17 +34,25 @@ class TabSystems < Tab
     add_label(:sys_focus, r.x, r.y, "Focus: #{focus}")
 
     if $g.get_system(@active_system).owner != 0
-      r = Layout.rect(row: 6, col: 12, w: 6, h: 1)
+      r = Layout.rect(row: 6, col: 16, w: 6, h: 1)
       claim_text = 'Cancel Claim'
       claim_text = 'Claim' if $g.get_system(@active_system).claims.none? { |c| c == 0 }
       add_button(:sys_claim, claim_text, r)
     else
-      r = Layout.rect(row: 5, col: 12, w: 2, h: 1)
-      add_button(:sys_focus_p, "P", r)
-      r = Layout.rect(row: 5, col: 14, w: 2, h: 1)
-      add_button(:sys_focus_s, "S", r)
       r = Layout.rect(row: 5, col: 16, w: 2, h: 1)
-      add_button(:sys_focus_r, "R", r)
+      add_button(:sys_focus_p, 'P', r)
+      r = Layout.rect(row: 5, col: 18, w: 2, h: 1)
+      add_button(:sys_focus_s, 'S', r)
+      r = Layout.rect(row: 5, col: 20, w: 2, h: 1)
+      add_button(:sys_focus_r, 'R', r)
+      r = Layout.rect(row: 6, col: 16, w: 6, h: 1)
+      add_label(:str_label, r.x, r.y, 'Strategy:')
+      r = Layout.rect(row: 6, col: 20, w: 2, h: 1)
+      if $g.get_system(@active_system).strategy == 0
+        add_button(:sys_strategy, 'D', r)
+      else
+        add_button(:sys_strategy, 'A', r)
+      end
     end
   end
 

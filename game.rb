@@ -15,7 +15,7 @@ class Game
     @tiles = []
     
     6.times do |y|
-      6.times do |x|
+      8.times do |x|
         @tiles << { x: x, y: y }
       end
     end
@@ -35,7 +35,7 @@ class Game
   end
 
   def add_fleet(owner, home, dest)
-    new_fleet = Fleet.new(owner, 1, home, dest, true)
+    new_fleet = Fleet.new(owner, 50, home, dest, true)
 
     fhome = get_system(home)
     new_fleet.x = fhome.position.x
@@ -134,7 +134,7 @@ class Game
 
       if claims.empty? == false
         @systems.each do |sys|
-          if sys.owner == player.id && sys.power > 1
+          if sys.strategy == 1 && sys.owner == player.id && sys.power > 1
             sys.power -= 1
             claims = claims.shuffle
             add_fleet(player.id, sys.sid, claims[0])
@@ -167,15 +167,19 @@ class Game
     @fleets.each do |fleet|
       sys = get_system(fleet.destination)
       if fleet.x == sys.position.x && fleet.y == sys.position.y
-        fleet.active = false
+        roll = rand(100) + 1
 
-        if sys.power > 0
-          sys.power -= 1
-        elsif sys.sprawl > 0
-          sys.sprawl -= 1
+        if roll < fleet.power
+          if sys.power > 0
+            sys.power -= 1
+          elsif sys.sprawl > 0
+            sys.sprawl -= 1
+          end
+
+          notes << { x: sys.position.x, y: sys.position.y, type: :damage, value: -1 }
+        else
+          fleet.active = false
         end
-
-        notes << { x: sys.position.x, y: sys.position.y, type: :damage, value: -1 }
       end
     end
 
@@ -184,7 +188,10 @@ class Game
       owner = get_player(ssystem.owner)
       r_mod += owner.r_level / 10 if owner.r_level > 0
 
-      # TODO if sprawl is zero, no other focus options should be possible
+      if ssystem.sprawl == 0
+        ssystem.focus = 1
+      end
+
       case ssystem.focus
       when 0
         ssystem.add_power(1 + r_mod)
@@ -196,6 +203,7 @@ class Game
 
       if ssystem.owner != 0
         ssystem.focus = get_player(ssystem.owner).preferred_focus
+        ssystem.strategy = rand(2)
       end
     end
 

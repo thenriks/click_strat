@@ -8,6 +8,8 @@ def handle_system_events(uitem, tab)
     $g.get_system(tab.active_system).focus = 1
   when :sys_focus_r
     $g.get_system(tab.active_system).focus = 2
+  when :sys_strategy
+    $g.get_system(tab.active_system).switch_strategy
   when :sys_claim
     sys = $g.get_system(tab.active_system)
 
